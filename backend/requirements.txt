@@ -9,3 +9,4 @@ python-dotenv==1.1.0
 djangorestframework-simplejwt==5.5.0
 drf-extra-fields==3.7.0
 reportlab==4.4.1
+flake8==7.2.0

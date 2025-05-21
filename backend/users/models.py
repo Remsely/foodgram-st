@@ -3,7 +3,6 @@ from django.db import models
 
 
 class User(AbstractUser):
-    """Custom User model for the Foodgram project."""
     email = models.EmailField(
         'Email',
         max_length=254,
@@ -37,7 +36,6 @@ class User(AbstractUser):
 
 
 class Subscription(models.Model):
-    """Model for user subscriptions."""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

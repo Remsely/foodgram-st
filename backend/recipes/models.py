@@ -1,9 +1,10 @@
+from django.contrib.auth import get_user_model
 from django.db import models
-from users.models import User
+
+User = get_user_model()
 
 
 class Ingredient(models.Model):
-    """Model for ingredients."""
     name = models.CharField(
         'Название ингредиента',
         max_length=200
@@ -29,7 +30,6 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
-    """Model for recipes."""
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -77,7 +77,6 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
-    """Model for recipe ingredients with amount."""
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -109,7 +108,6 @@ class RecipeIngredient(models.Model):
 
 
 class Favorite(models.Model):
-    """Model for users' favorite recipes."""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -138,7 +136,6 @@ class Favorite(models.Model):
 
 
 class ShoppingCart(models.Model):
-    """Model for users' shopping list."""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
