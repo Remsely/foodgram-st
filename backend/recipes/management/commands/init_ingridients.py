@@ -12,7 +12,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         json_path = os.path.join(
             os.path.dirname(__file__),
-            '../../../../data/ingredients.json'
+            '../../../data/ingredients.json'
         )
         json_path = os.path.abspath(json_path)
 
