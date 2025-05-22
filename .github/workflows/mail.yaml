@@ -63,21 +63,21 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fooodgram_backend:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
 
       - name: Build & Push frontend image
         uses: docker/build-push-action@v4
         with:
           context: ./frontend
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fooodgram_frontend:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
 
       - name: Build & Push gateway image
         uses: docker/build-push-action@v4
         with:
           context: ./infra
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fooodgram_gateway:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_gateway:latest
 
   notify:
     name: Telegram notify
@@ -91,4 +91,4 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            🚀 CI/CD для Kittygram успешно завершён! Образы задеплоены: fooodgram_backend, fooodgram_frontend, fooodgram_gateway.
+            🚀 Pipeline для Foodgram успешно завершён! Образы задеплоены: fooodgram_backend, fooodgram_frontend, fooodgram_gateway.
