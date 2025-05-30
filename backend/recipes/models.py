@@ -1,5 +1,13 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+
+from .constants import (
+    MIN_COOKING_TIME,
+    MAX_COOKING_TIME,
+    MIN_INGREDIENT_AMOUNT,
+    MAX_INGREDIENT_AMOUNT
+)
 
 User = get_user_model()
 
@@ -54,7 +62,11 @@ class Recipe(models.Model):
         verbose_name='Ингредиенты'
     )
     cooking_time = models.PositiveSmallIntegerField(
-        'Время приготовления (в минутах)'
+        'Время приготовления (в минутах)',
+        validators=[
+            MinValueValidator(MIN_COOKING_TIME),
+            MaxValueValidator(MAX_COOKING_TIME),
+        ]
     )
     pub_date = models.DateTimeField(
         'Дата публикации',
@@ -90,12 +102,17 @@ class RecipeIngredient(models.Model):
         verbose_name='Ингредиент'
     )
     amount = models.PositiveSmallIntegerField(
-        'Количество'
+        'Количество',
+        validators=[
+            MinValueValidator(MIN_INGREDIENT_AMOUNT),
+            MaxValueValidator(MAX_INGREDIENT_AMOUNT),
+        ]
     )
 
     class Meta:
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецептах'
+        ordering = ['ingredient__name']
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'ingredient'],
@@ -122,6 +139,7 @@ class Favorite(models.Model):
     )
 
     class Meta:
+        ordering = ['-id']
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
         constraints = [
@@ -150,6 +168,7 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
+        ordering = ['-id']
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
         constraints = [

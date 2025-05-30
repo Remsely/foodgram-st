@@ -1,10 +1,9 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
+from recipes.constants import MIN_COOKING_TIME, MAX_COOKING_TIME
 from recipes.models import (
     Recipe,
-    Favorite,
-    ShoppingCart,
     Ingredient,
     RecipeIngredient
 )
@@ -27,7 +26,7 @@ class UserWithRecipesSerializer(CustomUserSerializer):
         )
 
     def get_recipes(self, obj):
-        request = self.context.get('request')
+        request = self.context['request']
         limit = request.query_params.get('recipes_limit')
         recipes = obj.recipes.all()
         if limit:
@@ -65,22 +64,26 @@ class RecipeListSerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, obj):
-        user = self.context.get('request').user
+        user = self.context['request'].user
         if user.is_anonymous:
             return False
-        return Favorite.objects.filter(user=user, recipe=obj).exists()
+        return user.favorites.filter(recipe=obj).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        user = self.context.get('request').user
+        user = self.context['request'].user
         if user.is_anonymous:
             return False
-        return ShoppingCart.objects.filter(user=user, recipe=obj).exists()
+        return user.shopping_cart.filter(recipe=obj).exists()
 
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     ingredients = RecipeIngredientCreateSerializer(many=True)
     author = CustomUserSerializer(read_only=True)
+    cooking_time = serializers.IntegerField(
+        min_value=MIN_COOKING_TIME,
+        max_value=MAX_COOKING_TIME
+    )
 
     class Meta:
         model = Recipe
@@ -109,28 +112,15 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         for ingr in value:
             if not Ingredient.objects.filter(id=ingr['id']).exists():
                 missing.append(ingr['id'])
-            elif ingr['amount'] < 1:
-                raise serializers.ValidationError(
-                    {'ingredients': 'Количество ингредиента должно быть '
-                                    'больше 0.'}
-                )
         if missing:
             raise serializers.ValidationError(
                 {'ingredients': f'Ингредиент(ы) с id={missing} не найден(ы).'}
             )
         return value
 
-    @staticmethod
-    def validate_cooking_time(value):
-        if value < 1:
-            raise serializers.ValidationError(
-                {'cooking_time': 'Время приготовления должно быть > 0.'}
-            )
-        return value
-
     def validate(self, attrs):
-        request = self.context.get('request')
-        method = request.method if request else None
+        request = self.context['request']
+        method = request.method
 
         if method in ['POST', 'PATCH', 'PUT']:
             if ('image' not in self.initial_data

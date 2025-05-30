@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from .constants import MIN_INGREDIENT_AMOUNT, MAX_INGREDIENT_AMOUNT
 from .models import (
     Ingredient,
     Recipe,
@@ -33,7 +34,10 @@ class RecipeMinifiedSerializer(serializers.ModelSerializer):
 
 class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    amount = serializers.IntegerField(
+        min_value=MIN_INGREDIENT_AMOUNT,
+        max_value=MAX_INGREDIENT_AMOUNT
+    )
 
     class Meta:
         model = RecipeIngredient

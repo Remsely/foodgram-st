@@ -5,7 +5,6 @@ from rest_framework import filters, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from users.models import Subscription
 from users.serializers import (
     CustomUserSerializer,
     SetAvatarSerializer,
@@ -111,12 +110,12 @@ class CustomUserViewSet(UserViewSet):
                     {'error': 'Нельзя подписаться на самого себя.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            if Subscription.objects.filter(user=user, author=author).exists():
+            if user.subscriptions.filter(author=author).exists():
                 return Response(
                     {'error': 'Вы уже подписаны на этого пользователя.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            Subscription.objects.create(user=user, author=author)
+            user.subscriptions.create(author=author)
             serializer = UserWithRecipesSerializer(
                 author,
                 context={
@@ -125,8 +124,7 @@ class CustomUserViewSet(UserViewSet):
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        subscription = Subscription.objects.filter(user=user,
-                                                   author=author).first()
+        subscription = user.subscriptions.filter(author=author).first()
         if not subscription:
             return Response(
                 {'error': 'Вы не подписаны на этого пользователя.'},

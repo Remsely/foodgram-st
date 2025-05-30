@@ -8,9 +8,7 @@ from rest_framework.response import Response
 
 from recipes.models import (
     Recipe,
-    ShoppingCart,
-    RecipeIngredient,
-    Favorite
+    RecipeIngredient
 )
 from recipes.serializers import (
     RecipeShortLinkSerializer,
@@ -72,12 +70,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=pk)
 
         if request.method == 'POST':
-            if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
+            if user.shopping_cart.filter(recipe=recipe).exists():
                 return Response(
                     {'errors': 'Рецепт уже в списке покупок.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            ShoppingCart.objects.create(user=user, recipe=recipe)
+            user.shopping_cart.create(recipe=recipe)
             serializer = RecipeMinifiedSerializer(
                 recipe,
                 context={
@@ -87,8 +85,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            cart_item = ShoppingCart.objects.filter(user=user,
-                                                    recipe=recipe).first()
+            cart_item = user.shopping_cart.filter(recipe=recipe).first()
             if not cart_item:
                 return Response(
                     {'errors': 'Рецепта нет в списке покупок.'},
@@ -129,8 +126,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             content,
             content_type='text/plain; charset=utf-8'
         )
-        response['Content-Disposition'] = \
+        response['Content-Disposition'] = (
             'attachment; filename="shopping_cart.txt"'
+        )
         return response
 
     @action(
@@ -144,12 +142,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=pk)
 
         if request.method == 'POST':
-            if Favorite.objects.filter(user=user, recipe=recipe).exists():
+            if user.favorites.filter(recipe=recipe).exists():
                 return Response(
                     {'errors': 'Рецепт уже в избранном.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            Favorite.objects.create(user=user, recipe=recipe)
+            user.favorites.create(recipe=recipe)
             serializer = RecipeMinifiedSerializer(
                 recipe,
                 context={
@@ -158,7 +156,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        fav_item = Favorite.objects.filter(user=user, recipe=recipe).first()
+        fav_item = user.favorites.filter(recipe=recipe).first()
         if not fav_item:
             return Response(
                 {'errors': 'Рецепта нет в избранном.'},
